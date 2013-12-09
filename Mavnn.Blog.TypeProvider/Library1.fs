@@ -19,8 +19,8 @@ type Node () =
     member val Id = Id() with get, set
     member val Ports = Collections.Generic.List<Port>() with get, set
 
-type InputPort = | InputPort of Guid
-type OutputPort = | OutputPort of Guid
+type InputPort = | InputPort of Port
+type OutputPort = | OutputPort of Port
 
 type nodeInstance =
     {
@@ -29,7 +29,7 @@ type nodeInstance =
         Config : string
     }
 
-module private NodeInstance =
+module NodeInstance =
     let create node name guid config =
         { Node = node; InstanceId = Id(Name = name, UniqueId = guid); Config = config }    
 
@@ -37,7 +37,7 @@ let private nodes = JsonConvert.DeserializeObject<seq<Node>>(IO.File.ReadAllText
                     |> Seq.map (fun n -> n.Id.UniqueId.ToString(), n)
                     |> Map.ofSeq
 
-let private GetNode id =
+let GetNode id =
     nodes.[id]
 
 let private ports =
@@ -48,7 +48,7 @@ let private ports =
     |> Seq.map (fun p -> p.Id.UniqueId.ToString(), p)
     |> Map.ofSeq
 
-let private GetPort id =
+let GetPort id =
     ports.[id]
 
 [<TypeProvider>]
@@ -64,7 +64,7 @@ type MavnnProvider (config : TypeProviderConfig) as this =
                         typeof<InputPort>, 
                         GetterCode = fun args -> 
                             let id = port.Id.UniqueId.ToString()
-                            <@@ GetPort id @@>)
+                            <@@ GetPort id |> InputPort @@>)
         inputs.AddMember(port)
 
     let addOutputPort (outputs : ProvidedTypeDefinition) (port : Port) =
@@ -73,7 +73,7 @@ type MavnnProvider (config : TypeProviderConfig) as this =
                         typeof<OutputPort>, 
                         GetterCode = fun args -> 
                             let id = port.Id.UniqueId.ToString()
-                            <@@ GetPort id @@>)
+                            <@@ GetPort id |> OutputPort @@>)
         outputs.AddMember(port)
 
     let addPorts inputs outputs (portList : seq<Port>) =
