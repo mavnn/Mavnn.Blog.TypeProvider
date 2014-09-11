@@ -1,8 +1,10 @@
-﻿// Learn more about F# at http://fsharp.net. See the 'F# Tutorial' project
-// for more guidance on F# programming.
-
-#load "Library1.fs"
+﻿#r "bin/Debug/Mavnn.Blog.TypeProvider.dll"
 open Mavnn.Blog.TypeProvider
 
-// Define your library scripting code here
+let simpleNode = Provided.Simple("simple", System.Guid.NewGuid(), "A config string")
+let splitNode = Provided.Split("split", System.Guid.NewGuid(), "More config")
+
+simpleNode.InputPorts.Input
+splitNode.OutputPorts.Output1
+splitNode.OutputPorts.Output2
 
